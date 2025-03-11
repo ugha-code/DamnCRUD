@@ -60,7 +60,7 @@ if (isset($_GET['id'])) {
     </div>
 
     <div class="text-center">
-        <p class="mt-5 mb-3 text-muted">hk &copy; 2023</p>
+    <p class="mt-5 mb-3 text-muted">Your Damn Exercise &copy; 2023</p>
     </div>
 </body>
 

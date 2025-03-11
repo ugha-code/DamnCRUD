@@ -25,13 +25,13 @@
             $_SESSION['user'] = $user;
             header("location: index.php");
         } else {
-            $notif = "Wrong usename or password";
+            $notif = "Damn, wrong credentials!!";
         }
     }
 
     ?>
     <form class="form-signin" method="POST">
-        <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
+        <h1 class="h3 mb-3 font-weight-normal">Damn, sign in!</h1>
         <label for="inputUsername" class="sr-only">Username</label>
         <input type="username" id="inputUsername" name="username" class="form-control" placeholder="Username" required autofocus>
         <br>
@@ -42,8 +42,8 @@
                 <?= $notif ?>
             </label>
         </div>
-        <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
-        <p class="mt-5 mb-3 text-muted">hk &copy; 2023</p>
+        <button class="btn btn-lg btn-danger btn-block" type="submit">OK I'm sign in</button>
+        <p class="mt-5 mb-3 text-muted">Your Damn Exercise &copy; 2023</p>
     </form>
 </body>
 

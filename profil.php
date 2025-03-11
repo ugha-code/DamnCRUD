@@ -66,7 +66,7 @@ if (!isset($_SESSION['user'])) {
                     <div class="input-group">
                     <input class="form-control" type="file" id="formFile" name="image">
                     <div class="input-group-append">                    
-                        <button type="submit" class="btn btn-secondary">Ganti</button>
+                        <button type="submit" class="btn btn-secondary">Change</button>
                     </div>
                     </div>
                 </form>
@@ -93,7 +93,7 @@ if (!isset($_SESSION['user'])) {
         </div>
 
         <div class="text-center">
-            <p class="mt-5 mb-3 text-muted">hk &copy; 2023</p>
+        <p class="mt-5 mb-3 text-muted">Your Damn Exercise &copy; 2023</p>
         </div>
     </body>
 
