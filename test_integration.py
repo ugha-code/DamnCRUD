@@ -6,13 +6,12 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-# Pastikan BASE_URL sudah mengarah ke server PHP yang berjalan.
+# Pastikan BASE_URL mengarah ke server PHP yang berjalan.
 BASE_URL = "http://127.0.0.1:8000/"
 
 @pytest.fixture
 def driver():
     chrome_options = Options()
-    # Gunakan flag headless yang sesuai dengan versi Chrome
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
@@ -28,7 +27,6 @@ def test_valid_login(driver):
     driver.find_element(By.ID, "inputPassword").send_keys("admin")
     driver.find_element(By.XPATH, "//button[contains(text(),\"OK I'm sign in\")]").click()
     try:
-        # Tunggu hingga elemen dengan id "employee" muncul
         WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.ID, "employee")))
     except Exception:
         pytest.fail("Login dengan kredensial valid gagal.\nPage source:\n" + driver.page_source)
@@ -40,7 +38,6 @@ def test_invalid_login(driver):
     driver.find_element(By.ID, "inputPassword").send_keys("wrongpass")
     driver.find_element(By.XPATH, "//button[contains(text(),\"OK I'm sign in\")]").click()
     try:
-        # Cek seluruh body untuk menemukan teks error
         WebDriverWait(driver, 10).until(
             EC.text_to_be_present_in_element((By.TAG_NAME, "body"), "Damn, wrong credentials!!")
         )
