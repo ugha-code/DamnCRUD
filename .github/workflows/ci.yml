@@ -16,7 +16,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # index.php sudah ada dalam repositori
+      # index.php sudah ada dalam repositori, jadi tidak perlu dibuat temporary index
 
       - name: Install dependencies
         run: |
@@ -31,11 +31,10 @@ jobs:
 
       - name: Setup Database
         run: |
-          # Membuat database 'damncrud'
-          sudo mysql --user=root --execute="CREATE DATABASE IF NOT EXISTS damncrud;"
-          # Impor file SQL tanpa perlu perubahan karena file sudah menggunakan nama 'damncrud'
-          sudo mysql --user=root damncrud < db/damncrud.sql
-          # GRANT akses dengan password kosong sesuai dengan konfigurasi functions.php
+          # Pastikan file SQL menggunakan nama database "damncrud" seperti dalam functions.php.
+          # Jalankan perintah SQL secara keseluruhan (file SQL sudah memuat CREATE DATABASE dan USE)
+          sudo mysql --user=root < db/damncrud.sql
+          # Set GRANT privileges dengan password kosong (sesuai functions.php)
           sudo mysql --user=root --execute="GRANT ALL PRIVILEGES ON damncrud.* TO 'root'@'localhost' IDENTIFIED BY '';"
           sudo mysql --user=root --execute="FLUSH PRIVILEGES;"
 
