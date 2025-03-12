@@ -1,4 +1,4 @@
-name: CI/CD Pipeline for Integration Tests
+name: CI
 
 on:
   push:
@@ -7,32 +7,37 @@ on:
     branches: [ main ]
 
 jobs:
-  integration-tests:
+  tests:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Setup PHP
-      run: |
-        sudo apt-get update
-        sudo apt-get install php-cli php-mysql -y
-
-    - name: Start PHP Built-in Server
-      run: |
-        nohup php -S 127.0.0.1:8000 -t . > /dev/null 2>&1 &
-        sleep 5
-
-    - name: Setup Python
+    - name: Set up Python 3.9
       uses: actions/setup-python@v2
       with:
-        python-version: '3.8'
+        python-version: '3.9'
 
-    - name: Install Python Dependencies
+    - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install selenium pytest pytest-xdist
+        pip install -r requirements.txt
 
-    - name: Run Integration Tests in Parallel
-      run: pytest -n 5
+    - name: Install PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '7.4'
+
+    - name: Start PHP Built-in Server
+      run: nohup php -S 0.0.0.0:8000 -t . > /dev/null 2>&1 &
+      
+    - name: Install Chrome and ChromeDriver
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y chromium-browser chromium-chromedriver
+        sudo cp /usr/lib/chromium-browser/chromedriver /usr/bin/chromedriver
+
+    - name: Run Pytest in Parallel
+      run: |
+        pytest -n auto
