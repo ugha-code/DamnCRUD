@@ -37,7 +37,7 @@ jobs:
           sed -i 's/damncrud/badcrud/g' db/damncrud.sql
           sudo mysql --user=root badcrud < db/damncrud.sql
           # Ubah perintah GRANT sehingga password sesuai dengan 'root123'
-          sudo mysql --user=root --execute="GRANT ALL PRIVILEGES ON badcrud.* TO 'root'@'localhost' IDENTIFIED BY 'root123';"
+          sudo mysql --user=root --execute="GRANT ALL PRIVILEGES ON badcrud.* TO 'root'@'localhost' IDENTIFIED BY '';"
           sudo mysql --user=root --execute="FLUSH PRIVILEGES;"
 
       - name: Verify Database Setup
