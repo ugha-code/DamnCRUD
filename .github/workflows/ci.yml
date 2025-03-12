@@ -9,75 +9,72 @@ jobs:
     permissions: write-all
     runs-on: ubuntu-latest
     steps:
-        - name: Checkout the Repo
-          uses: actions/checkout@v4
+      - name: Checkout the Repo
+        uses: actions/checkout@v4
 
-        - name: Create isolated network
-          run: docker network create --driver bridge isolated
+      - name: Create isolated network
+        run: docker network create --driver bridge isolated
 
-        - name: Deploy AUT
-          run: docker build -t uas .
+      - name: Deploy and Run AUT
+        run: |
+          # Build image dari aplikasi
+          docker build -t uas .
+          # Jalankan container AUT (Apache)
+          docker run --network=isolated -p 80:80 --name docker-apache -t -d uas:latest
 
-        - name: Run AUT
-          run: docker run --network=isolated -p 80:80 --name docker-apache -t -d uas:latest
+      - name: Get AUT URL
+        run: |
+          URL=http://$(ip -f inet -o addr show docker0 | awk '{print $4}' | cut -d '/' -f 1)
+          echo "URL=$URL" >> $GITHUB_ENV
 
-        - name: Get AUT URL
-          run: |
-            URL=http://$(ip -f inet -o addr show docker0 | awk '{print $4}' | cut -d '/' -f 1)
-            echo "URL=$URL" >> $GITHUB_ENV
+      - name: Check AUT URL
+        run: curl ${{ env.URL }}
 
-        - name: Check AUT URL
-          run: curl ${{ env.URL }}
+      - name: Start Selenium Hub (Firefox Standalone)
+        run: docker run --network=isolated -d -p 4444:4444 -p 7900:7900 -v /dev/shm:/dev/shm --name firefox-standalone selenium/standalone-firefox:latest
 
-        - name: Selenium Preparation
-          run: docker run --network=isolated -d -p 4444:4444 -p 7900:7900 -v /dev/shm:/dev/shm --name firefox-standalone selenium/standalone-firefox:latest
+      - name: Setup Database
+        run: |
+          docker run --network=isolated --name uas-db -e MYSQL_ROOT_PASSWORD=useruas -e MYSQL_DATABASE=uas -v ${{ github.workspace }}/db:/docker-entrypoint-initdb.d -d mysql:5.7
+          sleep 10
+          docker exec uas-db sh -c 'mysql -h localhost -uroot -puseruas uas < /docker-entrypoint-initdb.d/damncrud.sql'
 
-        - name: DB Setup
-          run: docker run --network=isolated --name uas-db -e MYSQL_ROOT_PASSWORD=useruas -e MYSQL_DATABASE=uas -v ${{ github.workspace }}/db:/docker-entrypoint-initdb.d -d mysql:5.7
+      - name: Wait for Selenium Hub to be ready
+        run: sh wait.sh
 
-        - name: DB Wait
-          run: sleep 10
+      - name: Check Selenium Hub
+        run: curl http://localhost:4444/ui
 
-        - name: DB Exec
-          run: docker exec uas-db sh -c 'mysql -h localhost -uroot -puseruas uas < /docker-entrypoint-initdb.d/damncrud.sql'
+      - name: Install Selenium Python Package
+        run: pip install selenium
 
-        - name: Wait for Selenium Hub
-          run: sh wait.sh
+      - name: Run Integration Tests
+        run: python testing.py ${{ env.URL }}
+        continue-on-error: true
 
-        - name: Check Selenium Hub
-          run: curl http://localhost:4444/ui
+      - name: Authenticate and Get Session Cookie
+        run: |
+          curl -c cookies.txt -d "username=admin&password=nimda666!" ${{ env.URL }}/login.php
+          SESSION_COOKIE=$(grep PHPSESSID cookies.txt | awk '{print $7}')
+          echo "SESSION_COOKIE=$SESSION_COOKIE" >> $GITHUB_ENV
 
-        - name: Install Selenium
-          run: pip install selenium
+      - name: Echo Session Cookie
+        run: echo "Session Cookie: ${{ env.SESSION_COOKIE }}"
 
-        - name: Run Test Script
-          run: python testing.py ${{ env.URL }}
-          continue-on-error: true
+      - name: DAST with ZAP SCAN (Authenticated)
+        uses: hermanka/action-full-scan@master
+        with:
+          target: ${{ env.URL }}
+          network_name: isolated
+          cmd_options: >
+            -z "-config replacer.full_list(0).description=auth
+                 -config replacer.full_list(0).enabled=true
+                 -config replacer.full_list(0).matchtype=REQ_HEADER
+                 -config replacer.full_list(0).matchstr=Cookie
+                 -config replacer.full_list(0).replacement=PHPSESSID=${{ env.SESSION_COOKIE }}
+                 -config replacer.full_list(0).regex=false
+                 -config replacer.full_list(0).initiators=1,2,3,4,6,7"
+        continue-on-error: true
 
-        - name: Authenticate and Get Session Cookie
-          run: |
-            curl -c cookies.txt -d "username=admin&password=nimda666!" ${{ env.URL }}/login.php
-            SESSION_COOKIE=$(grep PHPSESSID cookies.txt | awk '{print $7}')
-            echo "SESSION_COOKIE=$SESSION_COOKIE" >> $GITHUB_ENV
-
-        - name: Echo Session Cookie
-          run: |
-            echo "Session Cookie: ${{ env.SESSION_COOKIE }}"
-
-        - name: DAST with ZAP SCAN (Authenticated)
-          uses: hermanka/action-full-scan@master
-          with:
-            target: ${{ env.URL }}
-            network_name: isolated
-            cmd_options: >
-              -z "-config replacer.full_list(0).description=auth
-                   -config replacer.full_list(0).enabled=true
-                   -config replacer.full_list(0).matchtype=REQ_HEADER
-                   -config replacer.full_list(0).matchstr=Cookie
-                   -config replacer.full_list(0).replacement=PHPSESSID=${{ env.SESSION_COOKIE }}
-                   -config replacer.full_list(0).regex=false
-                   -config replacer.full_list(0).initiators=1,2,3,4,6,7"
-          continue-on-error: true
-
-        - name: Stop Docker
-          run: docker stop docker-apache
+      - name: Stop Docker AUT
+        run: docker stop docker-apache
