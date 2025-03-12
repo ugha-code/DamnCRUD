@@ -6,12 +6,13 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-# Pastikan BASE_URL mengarah ke server yang sedang berjalan (misalnya: 127.0.0.1:8000 jika menggunakan PHP server dari ci.yml)
+# Pastikan BASE_URL sudah mengarah ke server PHP yang berjalan.
 BASE_URL = "http://127.0.0.1:8000/"
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def driver():
     chrome_options = Options()
+    # Gunakan flag headless yang sesuai dengan versi Chrome
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
@@ -27,10 +28,10 @@ def test_valid_login(driver):
     driver.find_element(By.ID, "inputPassword").send_keys("admin")
     driver.find_element(By.XPATH, "//button[contains(text(),\"OK I'm sign in\")]").click()
     try:
-        # Meningkatkan timeout menjadi 20 detik
+        # Tunggu hingga elemen dengan id "employee" muncul
         WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.ID, "employee")))
     except Exception:
-        pytest.fail("Login dengan kredensial valid gagal.")
+        pytest.fail("Login dengan kredensial valid gagal.\nPage source:\n" + driver.page_source)
 
 def test_invalid_login(driver):
     # Test Case 2: Validasi login dengan kredensial salah
@@ -39,12 +40,12 @@ def test_invalid_login(driver):
     driver.find_element(By.ID, "inputPassword").send_keys("wrongpass")
     driver.find_element(By.XPATH, "//button[contains(text(),\"OK I'm sign in\")]").click()
     try:
-        # Menggunakan pengecekan pada seluruh body untuk menemukan teks error
+        # Cek seluruh body untuk menemukan teks error
         WebDriverWait(driver, 10).until(
             EC.text_to_be_present_in_element((By.TAG_NAME, "body"), "Damn, wrong credentials!!")
         )
     except Exception:
-        pytest.fail("Pesan error tidak muncul untuk kredensial salah.")
+        pytest.fail("Pesan error tidak muncul untuk kredensial salah.\nPage source:\n" + driver.page_source)
 
 def test_create_contact(driver):
     # Test Case 3: Integrasi create contact
@@ -55,7 +56,7 @@ def test_create_contact(driver):
     try:
         WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.LINK_TEXT, "Add New Contact")))
     except Exception:
-        pytest.fail("Link 'Add New Contact' tidak ditemukan.")
+        pytest.fail("Link 'Add New Contact' tidak ditemukan.\nPage source:\n" + driver.page_source)
     driver.find_element(By.LINK_TEXT, "Add New Contact").click()
     driver.find_element(By.NAME, "name").send_keys("Test User")
     driver.find_element(By.NAME, "email").send_keys("testuser@example.com")
@@ -67,7 +68,7 @@ def test_create_contact(driver):
             EC.text_to_be_present_in_element((By.TAG_NAME, "body"), "Test User")
         )
     except Exception:
-        pytest.fail("Pembuatan kontak baru gagal.")
+        pytest.fail("Pembuatan kontak baru gagal.\nPage source:\n" + driver.page_source)
 
 def test_update_contact(driver):
     # Test Case 4: Integrasi update contact
@@ -94,4 +95,4 @@ def test_update_contact(driver):
             EC.text_to_be_present_in_element((By.TAG_NAME, "body"), new_name)
         )
     except Exception:
-        pytest.fail("Update kontak gagal.")
+        pytest.fail("Update kontak gagal.\nPage source:\n" + driver.page_source)
