@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@v4
 
       # Karena index.php sudah ada, tidak perlu membuat temporary index
-      
+
       - name: Install dependencies
         run: |
           sudo apt update
@@ -31,12 +31,13 @@ jobs:
 
       - name: Setup Database
         run: |
-          # Sesuaikan nama database dengan yang digunakan di functions.php (yaitu "badcrud")
+          # Membuat database dengan nama 'badcrud' (sesuai dengan koneksi di functions.php)
           sudo mysql --user=root --execute="CREATE DATABASE IF NOT EXISTS badcrud;"
-          # Ganti semua kemunculan 'damncrud' menjadi 'badcrud' dalam file SQL
+          # Ganti semua kemunculan 'damncrud' menjadi 'badcrud' di file SQL
           sed -i 's/damncrud/badcrud/g' db/damncrud.sql
           sudo mysql --user=root badcrud < db/damncrud.sql
-          sudo mysql --user=root --execute="GRANT ALL PRIVILEGES ON badcrud.* TO 'root'@'localhost' IDENTIFIED BY '';"
+          # Ubah perintah GRANT sehingga password sesuai dengan 'root123'
+          sudo mysql --user=root --execute="GRANT ALL PRIVILEGES ON badcrud.* TO 'root'@'localhost' IDENTIFIED BY 'root123';"
           sudo mysql --user=root --execute="FLUSH PRIVILEGES;"
 
       - name: Verify Database Setup
