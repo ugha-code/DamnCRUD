@@ -16,7 +16,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Tidak perlu membuat temporary index karena index.php sudah ada
+      # Karena index.php sudah ada, tidak perlu membuat temporary index
       
       - name: Install dependencies
         run: |
@@ -31,14 +31,17 @@ jobs:
 
       - name: Setup Database
         run: |
-          sudo mysql --user=root --execute="CREATE DATABASE IF NOT EXISTS damncrud;"
-          sudo mysql --user=root damncrud < db/damncrud.sql
-          sudo mysql --user=root --execute="GRANT ALL PRIVILEGES ON damncrud.* TO 'root'@'localhost' IDENTIFIED BY '';"
+          # Sesuaikan nama database dengan yang digunakan di functions.php (yaitu "badcrud")
+          sudo mysql --user=root --execute="CREATE DATABASE IF NOT EXISTS badcrud;"
+          # Ganti semua kemunculan 'damncrud' menjadi 'badcrud' dalam file SQL
+          sed -i 's/damncrud/badcrud/g' db/damncrud.sql
+          sudo mysql --user=root badcrud < db/damncrud.sql
+          sudo mysql --user=root --execute="GRANT ALL PRIVILEGES ON badcrud.* TO 'root'@'localhost' IDENTIFIED BY '';"
           sudo mysql --user=root --execute="FLUSH PRIVILEGES;"
 
       - name: Verify Database Setup
         run: |
-          sudo mysql -u root -e "USE damncrud; SHOW TABLES;"
+          sudo mysql -u root -e "USE badcrud; SHOW TABLES;"
 
       - name: Start PHP server
         run: |
