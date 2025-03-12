@@ -6,7 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-BASE_URL = "http://localhost/"  # Ubah URL sesuai dengan konfigurasi server aplikasi Anda
+BASE_URL = "http://127.0.0.1:8000/"
 
 @pytest.fixture(scope="session")
 def driver():
