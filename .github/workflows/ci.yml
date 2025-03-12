@@ -16,8 +16,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # index.php sudah ada dalam repositori, jadi tidak perlu dibuat temporary index
-
       - name: Install dependencies
         run: |
           sudo apt update
@@ -31,10 +29,9 @@ jobs:
 
       - name: Setup Database
         run: |
-          # Pastikan file SQL menggunakan nama database "damncrud" seperti dalam functions.php.
-          # Jalankan perintah SQL secara keseluruhan (file SQL sudah memuat CREATE DATABASE dan USE)
+          # Impor file SQL yang sudah mencakup perintah CREATE DATABASE, USE, dan INSERT data
           sudo mysql --user=root < db/damncrud.sql
-          # Set GRANT privileges dengan password kosong (sesuai functions.php)
+          # Set GRANT privileges dengan password kosong sesuai konfigurasi functions.php
           sudo mysql --user=root --execute="GRANT ALL PRIVILEGES ON damncrud.* TO 'root'@'localhost' IDENTIFIED BY '';"
           sudo mysql --user=root --execute="FLUSH PRIVILEGES;"
 
