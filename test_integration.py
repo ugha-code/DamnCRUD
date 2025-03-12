@@ -6,7 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-# Pastikan BASE_URL mengarah ke server PHP yang berjalan.
+# Pastikan BASE_URL mengarah ke server PHP yang berjalan di port 8000.
 BASE_URL = "http://127.0.0.1:8000/"
 
 @pytest.fixture
