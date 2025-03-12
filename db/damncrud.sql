@@ -18,7 +18,7 @@
 CREATE DATABASE IF NOT EXISTS `damncrud` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci */;
 USE `damncrud`;
 
--- Dumping structure for table damncrud.contacts
+-- Tabel contacts
 CREATE TABLE IF NOT EXISTS `contacts` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
