@@ -12,15 +12,14 @@ if (!isset($_SESSION['user'])) {
         $phone = $_POST['phone'];
         $title = $_POST['title'];
         $created = date('Y-m-d H:i:s');
-        // Insert new record into the contacts table
-        $stmt = $pdo->prepare('INSERT INTO contacts VALUES (?, ?, ?, ?, ?, ?)');
-        $stmt->execute([$id, $name, $email, $phone, $title, $created]);
+        // Perbaiki query INSERT dengan menyebutkan nama kolom agar auto-increment bekerja
+        $stmt = $pdo->prepare('INSERT INTO contacts (name, email, phone, title, created) VALUES (?, ?, ?, ?, ?)');
+        $stmt->execute([$name, $email, $phone, $title, $created]);
         header("location:index.php");
     }
     ?>
     <!DOCTYPE html>
     <html lang="en">
-
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -28,8 +27,8 @@ if (!isset($_SESSION['user'])) {
         <?= style_script() ?>
         <title>Add new contact</title>
     </head>
-
     <body>
+        <!-- Form create contact -->
         <div class="container" style="margin-top:50px">
             <div class="row">
                 <div class="col-md-5 col-sm-12 col-xs-12">
@@ -50,14 +49,11 @@ if (!isset($_SESSION['user'])) {
                 </div>
             </div>
         </div>
-
         <div class="text-center">
-        <p class="mt-5 mb-3 text-muted">Your Damn Exercise &copy; 2023</p>
+            <p class="mt-5 mb-3 text-muted">Your Damn Exercise &copy; 2023</p>
         </div>
     </body>
-
     </html>
 <?php 
-    
 } 
 ?>
